@@ -1,0 +1,44 @@
+mcs.metadata:
+  componentName: Start rendering the training video
+kind: TaskDialog
+modelDisplayName: StartTrainingVideo
+modelDescription: Second step. Sends the scene plan written from the IngestDocument result and queues the render. Returns jobId and estimatedReadySec. A 400 error returns errors[] with a path for every rule the plan breaks; fix all of them and call again, at most twice.
+inputs:
+  - kind: AutomaticTaskInput
+    propertyName: docId
+    description: The docId returned by IngestDocument.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: true
+
+  - kind: AutomaticTaskInput
+    propertyName: plan
+    description: 'The scene plan as one JSON string: {"title": "...", "scenes": [title, overview, step..., note, recap]} following the plan format and limits in the instructions.'
+    entity: StringPrebuiltEntity
+    shouldPromptUser: true
+
+  - kind: AutomaticTaskInput
+    propertyName: brandName
+    description: Company or team name shown on the video, only if the user or the document gives one.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+  - kind: AutomaticTaskInput
+    propertyName: brandColor
+    description: Brand colour as a hex value like #0F766E, only if the user or the document gives one.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+  - kind: AutomaticTaskInput
+    propertyName: voice
+    description: Narrator voice, only if the user asks for one. One of Sulafat (default, warm), Kore, Aoede, Achird, Charon, Puck, Leda, Orus.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_TrainingVideoBuilder.cr.trainingvideobuilder
+  connectionProperties:
+    mode: Invoker
+  operationId: StartTrainingVideo
+
+outputMode: All

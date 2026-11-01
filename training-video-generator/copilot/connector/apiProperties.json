@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "api_key": {
+        "type": "securestring",
+        "uiDefinition": {
+          "displayName": "API key",
+          "description": "Training Video Builder API key",
+          "tooltip": "Key sent in the x-api-key header",
+          "constraints": { "tabIndex": 2, "clearText": false, "required": "true" }
+        }
+      }
+    },
+    "iconBrandColor": "#0F766E",
+    "capabilities": [],
+    "scriptOperations": null,
+    "publisher": "Dex team tools",
+    "stackOwner": ""
+  }
+}

@@ -1,0 +1,28 @@
+mcs.metadata:
+  componentName: Read the procedure document
+kind: TaskDialog
+modelDisplayName: IngestDocument
+modelDescription: First step for every training video. Reads the procedure the user attached (Word .docx, PDF, .txt or .md) or pasted. The attached file's name and content are passed automatically from the chat attachment, so only fill text when the user pasted the procedure as text instead of attaching a file. Returns docId, the document text with [image:imgN] markers where each screenshot sits, and images with context and visibleText. A 415 or 422 error means the file type or content is not usable.
+inputs:
+  - kind: ManualTaskInput
+    propertyName: fileBase64
+    value: =If(IsEmpty(System.Activity.Attachments), Blank(), First(System.Activity.Attachments).Content)
+
+  - kind: ManualTaskInput
+    propertyName: fileName
+    value: =If(IsEmpty(System.Activity.Attachments), Blank(), First(System.Activity.Attachments).Name)
+
+  - kind: AutomaticTaskInput
+    propertyName: text
+    description: The procedure as plain text, only when the user pasted it in the chat instead of attaching a file. Leave empty when a file is attached.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: false
+
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_TrainingVideoBuilder.cr.trainingvideobuilder
+  connectionProperties:
+    mode: Invoker
+  operationId: IngestDocument
+
+outputMode: All

@@ -1,0 +1,362 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Training Video Builder",
+    "description": "Turn a procedure document (Word, PDF or text) into a narrated, captioned training video rendered with HyperFrames.",
+    "version": "1.0.0"
+  },
+  "host": "your-host.example.com",
+  "basePath": "/tv",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "apiKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-api-key"
+    }
+  },
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/ingest": {
+      "post": {
+        "operationId": "IngestDocument",
+        "summary": "Read a procedure document",
+        "description": "Reads a Word (.docx), PDF, .txt or .md procedure and returns its text with [image:imgN] markers where screenshots sit, plus each screenshot's id, size, the text just before it and the words visible on it. Call this first; plan the video from the returned text; use docId in StartTrainingVideo.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IngestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/IngestResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/render": {
+      "post": {
+        "operationId": "StartTrainingVideo",
+        "summary": "Start rendering a training video",
+        "description": "Validates the scene plan against the document and queues the render. If the plan breaks a rule the answer has ok false, status plan_invalid and errors[] with a path for each problem: fix every error and call again. When queued it returns a jobId; then call GetTrainingVideo to check on it; a video takes about 20 to 40 minutes.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RenderRequest"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Queued",
+            "schema": {
+              "$ref": "#/definitions/Job"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}": {
+      "get": {
+        "operationId": "GetTrainingVideo",
+        "summary": "Get a training video's status and link",
+        "description": "Returns the job status (queued, running, done, failed), the current stage, progress 0 to 1 and, when done, videoUrl, captionsUrl, duration and measured timings. waitSeconds (up to 20) waits for the job to finish before answering.",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Job id",
+            "description": "The jobId from StartTrainingVideo"
+          },
+          {
+            "name": "waitSeconds",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 20,
+            "x-ms-summary": "Wait seconds",
+            "description": "Wait up to this many seconds (max 20) for the video to finish"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Job"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "IngestRequest": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "x-ms-summary": "File name",
+          "description": "Name of the attached document, ending in .docx, .pdf, .txt or .md"
+        },
+        "fileBase64": {
+          "type": "string",
+          "x-ms-summary": "File content",
+          "description": "The document bytes as base64 (bind to the attachment content, do not generate)",
+          "format": "byte"
+        },
+        "text": {
+          "type": "string",
+          "x-ms-summary": "Pasted text",
+          "description": "The procedure as plain text, when the user pasted it instead of attaching a file"
+        }
+      }
+    },
+    "IngestResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "docId": {
+          "type": "string",
+          "description": "Use in StartTrainingVideo"
+        },
+        "characters": {
+          "type": "integer"
+        },
+        "text": {
+          "type": "string",
+          "description": "Document text; [image:imgN] marks where each screenshot sits"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              },
+              "context": {
+                "type": "string",
+                "description": "Text just before the screenshot"
+              },
+              "visibleText": {
+                "type": "string",
+                "description": "Words visible on the screenshot; highlight.text must use words from here"
+              }
+            }
+          }
+        }
+      }
+    },
+    "RenderRequest": {
+      "type": "object",
+      "required": [
+        "docId",
+        "plan"
+      ],
+      "properties": {
+        "docId": {
+          "type": "string",
+          "x-ms-summary": "Document id",
+          "description": "docId from IngestDocument"
+        },
+        "plan": {
+          "type": "string",
+          "x-ms-summary": "Scene plan JSON",
+          "description": "The scene plan as a JSON string, written with the training-video skill: {\"title\", \"scenes\": [title, overview, step..., note, recap]}"
+        },
+        "brandName": {
+          "type": "string",
+          "x-ms-summary": "Company name",
+          "description": "Company or team name shown on the video"
+        },
+        "brandColor": {
+          "type": "string",
+          "x-ms-summary": "Brand colour",
+          "description": "Hex colour like #0F766E"
+        },
+        "voice": {
+          "type": "string",
+          "x-ms-summary": "Narrator voice",
+          "description": "Sulafat (default, warm), Kore, Aoede, Achird, Charon, Puck, Leda or Orus",
+          "enum": [
+            "Sulafat",
+            "Kore",
+            "Aoede",
+            "Achird",
+            "Charon",
+            "Puck",
+            "Leda",
+            "Orus"
+          ]
+        }
+      }
+    },
+    "Job": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "queued, running, done or failed"
+        },
+        "stage": {
+          "type": "string",
+          "description": "queued, narrating, compiling, rendering, mixing, done or failed"
+        },
+        "progress": {
+          "type": "number"
+        },
+        "queuePosition": {
+          "type": "integer"
+        },
+        "estimatedReadySec": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "MP4 link, present when done"
+        },
+        "captionsUrl": {
+          "type": "string",
+          "description": "SRT captions link, present when done"
+        },
+        "durationSec": {
+          "type": "number"
+        },
+        "timings": {
+          "type": "object",
+          "properties": {
+            "narrationAndMusicSec": {
+              "type": "number"
+            },
+            "compileSec": {
+              "type": "number"
+            },
+            "renderSec": {
+              "type": "number"
+            },
+            "mixSec": {
+              "type": "number"
+            },
+            "totalSec": {
+              "type": "number"
+            }
+          }
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "narrationSeconds": {
+              "type": "number"
+            },
+            "ttsCalls": {
+              "type": "integer"
+            },
+            "music": {
+              "type": "string"
+            },
+            "renderSecondsPerVideoMinute": {
+              "type": "integer"
+            }
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

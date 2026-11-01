@@ -1,0 +1,24 @@
+mcs.metadata:
+  componentName: Get the training video
+kind: TaskDialog
+modelDisplayName: GetTrainingVideo
+modelDescription: Third step. Waits up to 20 seconds for the render and returns status (queued, running, done, failed), stage and progress, and when done videoUrl, captionsUrl, durationSec, timings.totalSec and warnings. A video takes about 20 to 40 minutes, so if it is not done, tell the user it is rendering with the estimate and check again with the same jobId when they ask.
+inputs:
+  - kind: AutomaticTaskInput
+    propertyName: jobId
+    description: The jobId returned by StartTrainingVideo.
+    entity: StringPrebuiltEntity
+    shouldPromptUser: true
+
+  - kind: ManualTaskInput
+    propertyName: waitSeconds
+    value: 20
+
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_TrainingVideoBuilder.cr.trainingvideobuilder
+  connectionProperties:
+    mode: Invoker
+  operationId: GetTrainingVideo
+
+outputMode: All
