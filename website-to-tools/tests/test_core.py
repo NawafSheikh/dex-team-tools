@@ -155,3 +155,24 @@ def test_every_response_field_gets_a_description():
     assert member["hireFor"]["description"] == "Hire for"
     assert done["properties"]["part"]["description"] == "Part"
     assert "description" not in shape["properties"]["part"]  # not mutated
+
+
+def test_keep_plan_adds_only_new_endpoints(monkeypatch):
+    from w2t import cli, plan as planner_mod
+    kept, eps = _plan()
+    extra_calls = CALLS + [call("POST", "https://shop.test/api/quote", req='{"x":1}', resp='{"ok":true}')]
+    endpoints, _ = group_calls(extra_calls, "shop.test")
+    seen = {}
+
+    def fake_make(goal, fresh, assets, pages, model):
+        seen["keys"] = [e.key for e in fresh]
+        raw = {"title": "t", "description": "d", "skipped": [], "gaps": [], "tools": [
+            {"endpoint": "POST shop.test/api/quote", "operation_id": "GetQuote", "summary": "Get quote",
+             "description": "A quote.", "kind": "read", "response_description": "Quote", "params": []}]}
+        return planner_mod.Plan(data=enforce(raw, fresh), cost_usd=0.01)
+
+    monkeypatch.setattr(cli.planner, "make", fake_make)
+    data, cost = cli.plan_new_endpoints(kept, "goal", endpoints, [], {}, "sonnet")
+    assert seen["keys"] == ["POST shop.test/api/quote"]
+    assert [t["operation_id"] for t in data["tools"]] == ["SearchItems", "GetItem", "PlaceOrder", "GetQuote"]
+    assert data["tools"][-1]["kind"] == "write"  # the write floor still applies to new tools
