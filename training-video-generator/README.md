@@ -32,6 +32,10 @@ wrong place.
 | `copilot/` | The Copilot Studio agent: `agent/` (instructions, the three tools, settings), `skills/training-video/SKILL.md` (structure rules for a good training video), `connector/` |
 | `sample/` | A fictional company's expense app (Brightwater Expenses) and the scripts that screenshot it and build the SOP Word document the episode used |
 
+## Let your agent set this up
+
+The [Dex Kit](https://mcpforwork.com/kit?utm_source=github&utm_medium=readme&utm_content=training-video-generator) includes this tool as a learned skill: your Claude Code or Codex installs it, configures it, tests it and runs it for you, end to end. You bring your own keys, host and Microsoft environment. The code here stays free as proof; the kit is the version your agent can follow step by step.
+
 ## Run it
 
 Requirements: Node 22+, ffmpeg and ffprobe, poppler (`pdftotext`, `pdfimages`) for PDFs, tesseract and Python 3

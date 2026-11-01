@@ -39,6 +39,10 @@ same audit log. They cannot push, open pull requests or start further sub-agents
 
 See [SECURITY.md](SECURITY.md) for the security review findings and fixes.
 
+## Let your agent set this up
+
+The [Dex Kit](https://mcpforwork.com/kit?utm_source=github&utm_medium=readme&utm_content=copilot-dev-tools) includes this tool as a learned skill: your Claude Code or Codex installs it, configures it, tests it and runs it for you, end to end. You bring your own keys, host and Microsoft environment. The code here stays free as proof; the kit is the version your agent can follow step by step.
+
 ## Run it
 
 Tests (no Docker needed):
