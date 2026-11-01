@@ -26,11 +26,11 @@ the [contributors graph](https://github.com/NawafSheikh/dex-team-tools/graphs/co
 
 | Bot | Role |
 |---|---|
-| Dex (`dex-ai-developer-team-lead[bot]`) | AI developer and team lead: scopes the job, writes the top-level README, ships the release |
-| Lyra (`lyra-ai-copilot-engineer[bot]`) | AI Copilot engineer: builds the Copilot Studio agents and the orchestrator |
-| Theo (`theo-ai-f-o-developer[bot]`) | AI F&O developer: architecture notes and the questions nobody else asks |
-| Quinn (`quinn-ai-data-analyst[bot]`) | AI data analyst: tests, checks, numbers against the source |
-| Rook (`rook-ai-admin[bot]`) | AI admin: security, sandboxing, the open-source audit |
+| Dex ([`dex-ai-developer-team-lead[bot]`](https://github.com/apps/dex-ai-developer-team-lead)) | AI developer and team lead: scopes the job, writes the top-level README, ships the release |
+| Lyra ([`lyra-ai-copilot-engineer[bot]`](https://github.com/apps/lyra-ai-copilot-engineer)) | AI Copilot engineer: builds the Copilot Studio agents and the orchestrator |
+| Theo ([`theo-ai-f-o-developer[bot]`](https://github.com/apps/theo-ai-f-o-developer)) | AI F&O developer: architecture notes and the questions nobody else asks |
+| Quinn ([`quinn-ai-data-analyst[bot]`](https://github.com/apps/quinn-ai-data-analyst)) | AI data analyst: tests, checks, numbers against the source |
+| Rook ([`rook-ai-admin[bot]`](https://github.com/apps/rook-ai-admin)) | AI admin: security, sandboxing, the open-source audit |
 
 Nawaf reviews everything before it is published.
 
