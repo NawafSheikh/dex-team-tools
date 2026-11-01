@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from . import llm
+from . import llm, schema as schema_mod
 from .endpoints import Endpoint
 
 PARAM = {
@@ -105,3 +105,41 @@ def undash(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: undash(v) for k, v in value.items()}
     return value
+
+
+FIELDS_SCHEMA = {
+    "type": "object",
+    "properties": {"tools": {"type": "array", "items": {"type": "object", "properties": {
+        "operation_id": {"type": "string"},
+        "fields": {"type": "array", "items": {"type": "object", "properties": {
+            "path": {"type": "string"}, "description": {"type": "string", "description": "one short sentence"}},
+            "required": ["path", "description"]}}},
+        "required": ["operation_id", "fields"]}}},
+    "required": ["tools"],
+}
+
+
+def describe_fields(data: dict[str, Any], endpoints: list[Endpoint], *, model: str = llm.DEFAULT_MODEL
+                    ) -> tuple[dict[str, Any], float]:
+    """Give every response field a one-line description (Copilot Studio will not save a tool without them).
+    One model call for the whole plan; tools that already have descriptions are left alone."""
+    by_key = {e.key: e for e in endpoints}
+    todo = []
+    for tool in data["tools"]:
+        ep = by_key.get(tool["endpoint"])
+        if tool.get("response_fields") is not None or ep is None:
+            continue
+        shape = schema_mod.infer([s for s in ep.response_samples if isinstance(s, (dict, list))])
+        paths = schema_mod.field_paths(shape)
+        if paths:
+            todo.append({"operation_id": tool["operation_id"], "tool": tool["description"], "paths": paths,
+                         "sample": ep.summary()["response_samples"][:1]})
+    if not todo:
+        return data, 0.0
+    result = llm.ask_json(json.dumps({"tools": todo}, ensure_ascii=False)[:60000], FIELDS_SCHEMA, model=model,
+                          system=("Describe each response field of each tool in one short plain sentence for an AI "
+                                  "agent that reads the answer: what the value is, using the sample to be specific. "
+                                  "Use the paths exactly as given. No dashes."))
+    found = {t["operation_id"]: {f["path"]: f["description"] for f in t["fields"]} for t in result.data["tools"]}
+    tools = [{**t, "response_fields": found.get(t["operation_id"], t.get("response_fields"))} for t in data["tools"]]
+    return undash({**data, "tools": tools}), result.cost_usd

@@ -54,3 +54,36 @@ def merge(a: dict[str, Any] | None, b: dict[str, Any]) -> dict[str, Any]:
     if a["type"] == "array":
         return {"type": "array", "items": merge(a.get("items") or None, b.get("items") or {})}
     return a
+
+
+def field_paths(schema: dict[str, Any], prefix: str = "") -> list[str]:
+    """Every property path in a schema: "team[].name" style, arrays marked with []."""
+    out: list[str] = []
+    if schema.get("type") == "object":
+        for key, sub in schema.get("properties", {}).items():
+            path = f"{prefix}.{key}" if prefix else key
+            out.append(path)
+            out += field_paths(sub, path)
+    elif schema.get("type") == "array":
+        out += field_paths(schema.get("items") or {}, prefix + "[]")
+    return out
+
+
+def annotate(schema: dict[str, Any], descriptions: dict[str, str], prefix: str = "") -> dict[str, Any]:
+    """A copy of the schema where every property has a description (Copilot Studio requires one for each).
+    Missing ones fall back to the field name in words."""
+    if schema.get("type") == "object":
+        props = {}
+        for key, sub in schema.get("properties", {}).items():
+            path = f"{prefix}.{key}" if prefix else key
+            props[key] = {**annotate(sub, descriptions, path),
+                          "description": descriptions.get(path) or _words(key)}
+        return {**schema, "properties": props}
+    if schema.get("type") == "array":
+        return {**schema, "items": annotate(schema.get("items") or {}, descriptions, prefix + "[]")}
+    return dict(schema)
+
+
+def _words(name: str) -> str:
+    spaced = "".join(" " + c.lower() if c.isupper() else c for c in name).replace("_", " ").strip()
+    return spaced[:1].upper() + spaced[1:] if spaced else "Value"

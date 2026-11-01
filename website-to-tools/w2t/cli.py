@@ -52,6 +52,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         plan = planner.make(args.goal, endpoints, assets, found.get("pages", {}), model=args.model)
         data = mark_reads(plan.data, set(args.read_ok))
         cost += plan.cost_usd
+    data, field_cost = planner.describe_fields(data, endpoints, model=args.model)
+    cost += field_cost
     (out / "plan.json").write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     timings["plan"] = time.time() - t
 

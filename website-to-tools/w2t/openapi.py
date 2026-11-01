@@ -80,7 +80,7 @@ def _operation(tool: dict[str, Any], ep: Endpoint, tag: dict[str, Any]) -> dict[
         # Hosts that honour it (Microsoft 365 Copilot API plugins) ask the user before a consequential call.
         "x-openai-isConsequential": tool["kind"] == "write",
         "responses": {"200": {"description": tool["response_description"],
-                              "schema": _response_schema(ep)}},
+                              "schema": _response_schema(ep, tool.get("response_fields") or {})}},
     }
     return op
 
@@ -108,6 +108,6 @@ def _typed(p: dict[str, Any], *, describe: bool = True) -> dict[str, Any]:
     return out
 
 
-def _response_schema(ep: Endpoint) -> dict[str, Any]:
+def _response_schema(ep: Endpoint, fields: dict[str, str]) -> dict[str, Any]:
     samples = [s for s in ep.response_samples if isinstance(s, (dict, list))]
-    return schema.infer(samples)
+    return schema.annotate(schema.infer(samples), fields)
