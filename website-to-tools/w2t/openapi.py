@@ -75,12 +75,22 @@ def _operation(tool: dict[str, Any], ep: Endpoint, tag: dict[str, Any]) -> dict[
             body["required"] = body_required
         params.append({"name": "body", "in": "body", "required": bool(body_required), "schema": body})
     op: dict[str, Any] = {
-        "operationId": tool["operation_id"], "summary": tool["summary"], "description": tool["description"],
+        "operationId": tool["operation_id"], "summary": tool["summary"], "description": _description(tool),
         "parameters": params,
+        # Hosts that honour it (Microsoft 365 Copilot API plugins) ask the user before a consequential call.
+        "x-openai-isConsequential": tool["kind"] == "write",
         "responses": {"200": {"description": tool["response_description"],
                               "schema": _response_schema(ep)}},
     }
     return op
+
+
+WRITE_NOTE = (" Only call this after showing the user exactly what will be sent and the user explicitly agreed;"
+              " it sends or changes something on the site.")
+
+
+def _description(tool: dict[str, Any]) -> str:
+    return tool["description"] + (WRITE_NOTE if tool["kind"] == "write" else "")
 
 
 def _hidden(value: str) -> dict[str, Any]:
