@@ -30,6 +30,10 @@ agents, not people, and their accounts are clearly marked as bots.
 
 Nawaf reviews everything before it is published.
 
+## Let your agent set this up
+
+Each tool is also in the [Dex Kit](https://mcpforwork.com/kit?utm_source=github&utm_medium=readme&utm_content=top-level) as a learned skill: your Claude Code or Codex installs it, configures it, tests it and runs it for you, end to end. The code in this repo stays free as proof. The kit is the version your agent can follow step by step, with the tool code bundled.
+
 ## Quick start
 
 Each tool is independent. Pick one and follow its README.
