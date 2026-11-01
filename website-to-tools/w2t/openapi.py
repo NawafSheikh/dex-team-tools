@@ -24,11 +24,19 @@ def build(plan: dict[str, Any], endpoints: list[Endpoint], *, version: str = "1.
         paths.setdefault(path, {})[ep.method.lower()] = _operation(tool, ep, tag or {})
     return {
         "swagger": "2.0",
-        "info": {"title": plan["title"][:30], "description": plan["description"], "version": version},
+        "info": {"title": short_title(plan["title"]), "description": plan["description"], "version": version},
         "host": host, "basePath": "/", "schemes": ["https"],
         "consumes": [JSON], "produces": [JSON],
         "paths": paths,
     }
+
+
+def short_title(title: str, limit: int = 30) -> str:
+    """Power Platform caps connector titles at 30 characters: cut on a word, never mid-word."""
+    if len(title) <= limit:
+        return title
+    cut = title[:limit].rsplit(" ", 1)[0].rstrip(" ,-:")
+    return cut or title[:limit]
 
 
 def _path(tool: dict[str, Any]) -> str:

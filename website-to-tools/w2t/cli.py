@@ -46,9 +46,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     t = time.time()
     endpoints, assets = group_calls(found["calls"], site_host)
-    plan = planner.make(args.goal, endpoints, assets, found.get("pages", {}), model=args.model)
-    data = mark_reads(plan.data, set(args.read_ok))
-    cost += plan.cost_usd
+    if args.keep_plan and (out / "plan.json").exists():
+        data = mark_reads(json.loads((out / "plan.json").read_text(encoding="utf-8")), set(args.read_ok))
+    else:
+        plan = planner.make(args.goal, endpoints, assets, found.get("pages", {}), model=args.model)
+        data = mark_reads(plan.data, set(args.read_ok))
+        cost += plan.cost_usd
     (out / "plan.json").write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     timings["plan"] = time.time() - t
 
@@ -103,6 +106,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--tag", default="", help='JSON, e.g. {"body": {"src": "?utm_source=mcp"}}')
     r.add_argument("--rest-tag", default="", help="same as --tag, for the OpenAPI (REST tool) path")
     r.add_argument("--reuse", action="store_true", help="reuse discovery.json in --out")
+    r.add_argument("--keep-plan", action="store_true",
+                   help="reuse plan.json in --out (a reviewed, frozen plan) instead of planning again")
     r.add_argument("--test", action="store_true", help="start the generated server and test every tool")
     r.add_argument("--port", type=int, default=0, help="local test port (0 = any free port)")
     args = ap.parse_args(argv)
