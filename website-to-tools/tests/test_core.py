@@ -143,3 +143,14 @@ def test_undash_and_short_title():
     assert undash({"a": ["x \u2014 y", "1\u20132"]}) == {"a": ["x, y", "1-2"]}
     assert openapi.short_title("mcpforwork.com, Hire Dex and her AI team") == "mcpforwork.com, Hire Dex and"
     assert openapi.short_title("Short") == "Short"
+
+
+def test_every_response_field_gets_a_description():
+    shape = schema.infer([{"team": [{"id": "dex", "hireFor": ["x"]}], "part": "team"}])
+    assert schema.field_paths(shape) == ["team", "team[].id", "team[].hireFor", "part"]
+    done = schema.annotate(shape, {"team[].id": "Team member id."})
+    member = done["properties"]["team"]["items"]["properties"]
+    assert member["id"]["description"] == "Team member id."
+    assert member["hireFor"]["description"] == "Hire for"
+    assert done["properties"]["part"]["description"] == "Part"
+    assert "description" not in shape["properties"]["part"]  # not mutated
