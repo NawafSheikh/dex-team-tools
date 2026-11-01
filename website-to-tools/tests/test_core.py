@@ -102,6 +102,7 @@ def test_openapi_v2_shape_and_hidden_tag():
     assert body["properties"]["src"]["default"] == "?utm_source=copilot"
     assert set(body["required"]) == {"item", "src"}
     assert order["x-openai-isConsequential"] is True
+    assert order["responses"]["200"]["schema"]["description"] == "Order"  # no sample: whole response described
     assert spec["paths"]["/api/items"]["get"]["x-openai-isConsequential"] is False
     search = spec["paths"]["/api/items"]["get"]
     assert search["responses"]["200"]["schema"]["properties"]["items"]["type"] == "array"
