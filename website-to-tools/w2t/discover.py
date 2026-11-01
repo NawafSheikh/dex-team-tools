@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Request as PwRequest
 from playwright.sync_api import Route, sync_playwright
 
@@ -134,7 +135,7 @@ def run(url: str, goal: str, approver: Approver, out: Path, *, max_steps: int = 
         ctx.on("requestfinished", rec.finished)
         page = ctx.new_page()
         found.calls.extend(catalog.probe(ctx.request, url, site_host))
-        page.goto(url, wait_until="networkidle")
+        open_page(page, url)
         for step in range(max_steps):
             rec.current_page = page.url
             if not _step(page, found, step, site_host, model):
@@ -144,6 +145,20 @@ def run(url: str, goal: str, approver: Approver, out: Path, *, max_steps: int = 
     found.seconds = round(time.time() - started, 1)
     found.save(out)
     return found
+
+
+def open_page(page: Any, url: str) -> None:
+    """Navigate and wait until the document says it is complete. Playwright's own load and networkidle events
+    can fail to arrive on real pages (analytics, consent scripts), so the document state is the signal."""
+    page.goto(url, wait_until="commit")
+    for _ in range(120):  # up to about a minute; polled through DevTools so a strict page CSP cannot block it
+        try:
+            if page.evaluate("() => document.readyState") == "complete":
+                break
+        except PlaywrightError:
+            pass  # the document is being replaced; ask again
+        page.wait_for_timeout(500)
+    page.wait_for_timeout(1200)
 
 
 def _step(page: Any, found: Discovery, step: int, site_host: str, model: str) -> bool:
@@ -183,4 +198,4 @@ def _do(page: Any, act: dict[str, Any], site_host: str) -> None:
         target = act.get("url", "")
         if not in_scope((urlsplit(target).hostname or site_host).removeprefix("www."), site_host):
             raise ValueError(f"refused to leave the site: {target}")
-        page.goto(target if urlsplit(target).scheme else page.url.split("#")[0].rstrip("/") + "/" + target.lstrip("/"))
+        open_page(page, target if urlsplit(target).scheme else page.url.split("#")[0].rstrip("/") + "/" + target.lstrip("/"))
