@@ -26,6 +26,8 @@ ACTIVE_JOB = {"running", "retrying", "rerouted"}
 _hooks: dict[str, Callable] = {}
 _verifying: set[tuple[str, str]] = set()
 _guard = threading.Lock()
+_stop = threading.Event()
+_thread: threading.Thread | None = None
 
 
 def install(start_agent: Callable[[str, str, Path, str], str], get_job: Callable[[str], dict]) -> None:
@@ -34,7 +36,19 @@ def install(start_agent: Callable[[str, str, Path, str], str], get_job: Callable
     _hooks["start"] = start_agent
     _hooks["job"] = get_job
     _recover()
-    threading.Thread(target=_loop, name="workday-engine", daemon=True).start()
+    global _thread
+    _stop.clear()
+    _thread = threading.Thread(target=_loop, name="workday-engine", daemon=True)
+    _thread.start()
+
+
+def shutdown(timeout: float = 10.0) -> None:
+    """Stop the background loop (used by tests so one test's loop never ticks the next test's run)."""
+    global _thread
+    _stop.set()
+    if _thread is not None and _thread.is_alive():
+        _thread.join(timeout)
+    _thread = None
 
 
 def _recover() -> None:
@@ -50,7 +64,7 @@ def _recover() -> None:
 
 
 def _loop() -> None:
-    while True:
+    while not _stop.is_set():
         try:
             runs = store.list_runs(limit=50)
         except Exception:
@@ -63,7 +77,7 @@ def _loop() -> None:
                 tick(run["run_id"])
             except Exception:
                 log.exception("workday tick failed for %s", run["run_id"])
-        time.sleep(4)
+        _stop.wait(4)
 
 
 def tick(run_id: str) -> None:
