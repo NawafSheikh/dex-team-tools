@@ -73,7 +73,7 @@ python -m w2t run https://example.com \
 | Option | Meaning |
 |---|---|
 | `--headed` | Show the browser (good for filming) |
-| `--approve terminal\|file\|deny` | How writes are approved during discovery (default terminal) |
+| `--approve terminal\|file\|deny` | How writes are approved during discovery (default terminal; file approvals go to `<out>/approvals` unless `--approvals-dir` is set) |
 | `--read-ok OpId ...` | Operation ids a person declares read-only |
 | `--tag JSON` / `--rest-tag JSON` | Fixed fields for the MCP server / the OpenAPI file |
 | `--reuse` | Reuse `discovery.json` in `--out` |
@@ -87,6 +87,8 @@ Output in `--out`: `discovery.json`, `network.har`, `plan.json`, `openapi.json`,
 
 ```bash
 cd runs/example/mcp-server && npm install && node serve.mjs 8080   # POST http://localhost:8080/mcp
+# listens on 127.0.0.1 only. To expose it: MCP_API_KEY=<16+ chars> HOST=0.0.0.0 node serve.mjs 8080
+# (it refuses to start exposed without a key; clients send the key in the x-api-key header)
 ```
 
 `mcp-server.mjs` also exports a default `(req, res)` handler, so it runs as a Vercel or other Node function as is.
