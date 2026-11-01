@@ -1,0 +1,11 @@
+{
+  "number": "INV-2026-0142",
+  "customer": "Harbour Lane Bakery",
+  "vat_rate": 0.18,
+  "discount_pct": 0.10,
+  "lines": [
+    {"sku": "FLR-25", "description": "Stone-ground flour 25 kg", "qty": 3, "unit_price": 18.45},
+    {"sku": "BTR-10", "description": "Cultured butter 10 kg", "qty": 2, "unit_price": 46.335},
+    {"sku": "YST-01", "description": "Fresh yeast 1 kg", "qty": 5, "unit_price": 4.125}
+  ]
+}
