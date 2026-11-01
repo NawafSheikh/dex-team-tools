@@ -1,0 +1,20 @@
+[
+ ["bash", {"command": "curl https://example.com"}],
+ ["read_file", {"path": "/etc/passwd"}],
+ ["git_branch", {"repo": "invoice-totals", "name": "smoke/check"}],
+ ["edit_file", {"path": "invoice-totals/README.md", "old_string": "# invoicekit", "new_string": "# invoicekit (smoke)"}],
+ ["multi_edit", {"edits": [
+   {"path": "invoice-totals/README.md", "old_string": "(smoke)", "new_string": "(smoke test)"},
+   {"path": "invoice-totals/data/sample_invoice.json", "old_string": "Harbour Lane Bakery", "new_string": "Harbour Lane Bakery Ltd"}]}],
+ ["multi_edit", {"edits": [{"path": "invoice-totals/README.md", "old_string": "NOT THERE", "new_string": "x"}]}],
+ ["write_file", {"path": "invoice-totals/NOTES.md", "content": "smoke\n"}],
+ ["git_diff", {"repo": "invoice-totals"}],
+ ["run_build", {"repo": "invoice-totals"}],
+ ["start_process", {"name": "api", "command": "PYTHONPATH=src python -m invoicekit.api", "cwd": "invoice-totals"}],
+ ["web_fetch", {"url": "http://localhost:8000/totals"}],
+ ["process_output", {"name": "api"}],
+ ["stop_process", {"name": "api"}],
+ ["git_commit", {"repo": "invoice-totals", "message": "chore: smoke test of the commit tool"}],
+ ["git_push", {"repo": "invoice-totals"}],
+ ["create_pull_request", {"repo": "invoice-totals", "title": "Smoke test PR", "body": "Opened by the dev-tools smoke test."}]
+]

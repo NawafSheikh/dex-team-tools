@@ -1,0 +1,15 @@
+[
+ ["grep", {"pattern": "round[(]", "path": "invoice-totals", "include": "*.py"}],
+ ["read_file", {"path": "invoice-totals/src/invoicekit/money.py"}],
+ ["run_tests", {"repo": "invoice-totals"}],
+ ["powershell", {"command": "Get-ChildItem -Recurse -Filter *.py | Measure-Object | Select-Object -ExpandProperty Count", "cwd": "invoice-totals"}],
+ ["bash", {"command": "curl https://example.com"}],
+ ["bash", {"command": "cat /opt/devtools/.env"}],
+ ["read_file", {"path": "/etc/passwd"}],
+ ["bash", {"command": "uname -sr; python --version; whoami"}],
+ ["git_status", {"repo": "invoice-totals"}],
+ ["todo_write", {"todos": [{"content": "Reproduce failing tests", "status": "completed"}, {"content": "Fix rounding", "status": "in_progress"}]}],
+ ["todo_read", {}],
+ ["web_search", {"query": "python decimal ROUND_HALF_UP quantize"}],
+ ["web_fetch", {"url": "https://docs.python.org/3/library/decimal.html", "max_chars": 400}]
+]
