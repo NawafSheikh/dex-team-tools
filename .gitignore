@@ -1,0 +1,33 @@
+# secrets and local settings
+.env
+*.env
+!.env.example
+*.pem
+*.key
+secrets/
+
+# private working files (audit notes, drafts) never go in this repo
+AUDIT.md
+private/
+
+# dependencies and caches
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# runtime data and generated outputs
+/workday-orchestrator/data/
+/workday-orchestrator/inbox/
+/workday-orchestrator/truth/
+/training-video-generator/service/data/
+/training-video-generator/service/state/
+/copilot-dev-tools/state/
+*.log
+training-video-generator/sample/sop/shots/
+training-video-generator/sample/sop/*.docx
+*.mp4
+*.mp3
+*.wav
