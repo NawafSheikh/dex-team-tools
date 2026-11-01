@@ -34,7 +34,14 @@ Want to see how the team built it? Open the commit history: each bot commits its
   Only a person can mark a POST as read-only (`--read-ok EstimateJob`), and that is recorded in the plan.
 - **Generated write tools need confirm.** Called without `confirm=true`, a write tool returns a preview and sends
   nothing. The server instructions tell the agent to set it only after the user agreed.
-- **Rate limits.** Every non-GET call is limited per caller (3 per hour by default).
+- **Rate limits.** Every non-GET call is limited per caller and tool (3 per hour by default). The slot is reserved
+  before the call, so parallel or batched calls cannot slip through; it is given back only when the site refused
+  without doing any work (429, 503). Batches are capped at 5 messages.
+- **No browsers.** The server sends no CORS headers and refuses any request with an `Origin` header that is not in
+  `MCP_ALLOWED_ORIGINS` (empty by default), so another website cannot use its visitors to call your tools.
+- **The real caller reaches the site.** With `FORWARD_SECRET` (32+ characters) set on both sides, the server sends
+  the caller IP in `X-Forwarded-Client-IP`, signed over ip, time, method and path and valid for 60 seconds, so the
+  site's own per-IP limits still work. Only set it behind a proxy that sets `x-real-ip` (Vercel, nginx).
 - **Only the site's own hosts.** Third-party requests are never turned into tools; third-party and beacon writes
   are aborted during discovery, and cookie banners are declined.
 - **Hidden form fields stay hidden.** Fields that are always empty and never shown (often anti-spam traps) are left
@@ -109,4 +116,8 @@ usage.
 - Plans differ a little between runs (names, wording). Review `plan.json` once, then use `--keep-plan`.
 - The rate limit lives in memory per server instance: on serverless platforms each warm instance counts on its
   own. Put a shared store behind it for heavy traffic.
+- The REST API tool (path A) calls the site directly, so the MCP server's confirm step and limits do not apply
+  there. The OpenAPI file marks writes as consequential and says to ask first; turn on the tool's user confirmation
+  in Copilot Studio as well.
+- `confirm=true` guides honest agents. It is not a security control: rate limits and the site's own checks are.
 - The judge in the test step is a model. It catches wrong or empty answers well, but it is not a contract test.
