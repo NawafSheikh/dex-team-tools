@@ -44,10 +44,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         found, cost = d.__dict__, d.cost_usd
     timings["discover"] = time.time() - clock
 
+    if args.manual_calls:
+        # Real calls a person made (for example to a feature no page calls yet), kept apart and marked as manual.
+        found = {**found, "calls": found["calls"] + json.loads(Path(args.manual_calls).read_text(encoding="utf-8"))}
+
     t = time.time()
     endpoints, assets = group_calls(found["calls"], site_host)
     if args.keep_plan and (out / "plan.json").exists():
-        data = mark_reads(json.loads((out / "plan.json").read_text(encoding="utf-8")), set(args.read_ok))
+        kept = json.loads((out / "plan.json").read_text(encoding="utf-8"))
+        data, add_cost = plan_new_endpoints(kept, args.goal, endpoints, assets, found.get("pages", {}), args.model)
+        data = mark_reads(data, set(args.read_ok))
+        cost += add_cost
     else:
         plan = planner.make(args.goal, endpoints, assets, found.get("pages", {}), model=args.model)
         data = mark_reads(plan.data, set(args.read_ok))
@@ -83,6 +90,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     return summary
 
 
+def plan_new_endpoints(kept: dict[str, Any], goal: str, endpoints: list[Any], assets: list[dict[str, Any]],
+                       pages: dict[str, str], model: str) -> tuple[dict[str, Any], float]:
+    """Keep a reviewed plan as it is and plan only endpoints it does not cover yet (no renames, no drift)."""
+    covered = {t["endpoint"] for t in kept["tools"]} | {s["endpoint"] for s in kept.get("skipped", [])}
+    fresh = [e for e in endpoints if e.key not in covered]
+    if not fresh:
+        return kept, 0.0
+    added = planner.make(goal, fresh, assets, pages, model=model)
+    taken = {t["operation_id"] for t in kept["tools"]}
+    tools = kept["tools"] + [t for t in added.data["tools"] if t["operation_id"] not in taken]
+    return {**kept, "tools": tools, "skipped": kept.get("skipped", []) + added.data.get("skipped", [])}, added.cost_usd
+
+
 def mark_reads(data: dict[str, Any], read_ok: set[str]) -> dict[str, Any]:
     """A person may declare that a non-GET call only reads (for example an estimate). Recorded in the plan."""
     tools = [{**t, "kind": "read", "read_ok_by_human": True} if t["operation_id"] in read_ok else t
@@ -109,6 +129,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--tag", default="", help='JSON, e.g. {"body": {"src": "?utm_source=mcp"}}')
     r.add_argument("--rest-tag", default="", help="same as --tag, for the OpenAPI (REST tool) path")
     r.add_argument("--reuse", action="store_true", help="reuse discovery.json in --out")
+    r.add_argument("--manual-calls", default="", help="JSON list of real calls made by a person, added to discovery")
     r.add_argument("--keep-plan", action="store_true",
                    help="reuse plan.json in --out (a reviewed, frozen plan) instead of planning again")
     r.add_argument("--test", action="store_true", help="start the generated server and test every tool")
