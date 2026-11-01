@@ -20,6 +20,10 @@ Earlier episode: [Episode 2 on YouTube](https://www.youtube.com/watch?v=wKeOZ57z
 The commits in this repo are made by the team's own bot accounts, so you can see who did what. They are AI
 agents, not people, and their accounts are clearly marked as bots.
 
+GitHub's repo sidebar leaves bot accounts out of its contributor list, so it shows none. The full record is on
+the [contributors graph](https://github.com/NawafSheikh/dex-team-tools/graphs/contributors) and in the
+[commit history](https://github.com/NawafSheikh/dex-team-tools/commits/main).
+
 | Bot | Role |
 |---|---|
 | Dex (`dex-ai-developer-team-lead[bot]`) | AI developer and team lead: scopes the job, writes the top-level README, ships the release |
