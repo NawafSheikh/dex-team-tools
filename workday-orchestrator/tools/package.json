@@ -1,0 +1,8 @@
+{
+  "name": "workday-dv",
+  "private": true,
+  "version": "1.0.0",
+  "description": "dv: Dataverse and Power Platform REST helper for workday agents",
+  "bin": { "dv": "dv.js" },
+  "dependencies": { "@azure/msal-node": "^3.6.0" }
+}
