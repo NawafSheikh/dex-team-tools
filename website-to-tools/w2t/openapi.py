@@ -80,7 +80,8 @@ def _operation(tool: dict[str, Any], ep: Endpoint, tag: dict[str, Any]) -> dict[
         # Hosts that honour it (Microsoft 365 Copilot API plugins) ask the user before a consequential call.
         "x-openai-isConsequential": tool["kind"] == "write",
         "responses": {"200": {"description": tool["response_description"],
-                              "schema": _response_schema(ep, tool.get("response_fields") or {})}},
+                              "schema": _response_schema(ep, tool.get("response_fields") or {},
+                                                         tool["response_description"])}},
     }
     return op
 
@@ -108,6 +109,9 @@ def _typed(p: dict[str, Any], *, describe: bool = True) -> dict[str, Any]:
     return out
 
 
-def _response_schema(ep: Endpoint, fields: dict[str, str]) -> dict[str, Any]:
+def _response_schema(ep: Endpoint, fields: dict[str, str], response_description: str = "") -> dict[str, Any]:
     samples = [s for s in ep.response_samples if isinstance(s, (dict, list))]
-    return schema.annotate(schema.infer(samples), fields)
+    shaped = schema.annotate(schema.infer(samples), fields)
+    # No sample (a write held during discovery) leaves a bare object, which Copilot Studio lists as one field
+    # named "output" that needs a description: give the whole response the tool's response description.
+    return {**shaped, "description": response_description} if response_description else shaped
