@@ -40,7 +40,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         cost = 0.0
     else:
         d = discover.run(args.url, args.goal, approver, out, max_steps=args.max_steps, headed=args.headed,
-                         channel=args.channel, model=args.model)
+                         channel=args.channel, model=args.model, cdp=args.cdp)
         found, cost = d.__dict__, d.cost_usd
     timings["discover"] = time.time() - clock
 
@@ -100,6 +100,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--name", default="")
     r.add_argument("--headed", action="store_true")
     r.add_argument("--channel", default=None, help="browser channel, e.g. chrome")
+    r.add_argument("--cdp", default="", help="drive an existing browser instead, e.g. http://127.0.0.1:9333")
     r.add_argument("--max-steps", type=int, default=25)
     r.add_argument("--model", default="sonnet")
     r.add_argument("--approve", choices=["terminal", "file", "deny"], default="terminal")

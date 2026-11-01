@@ -123,14 +123,20 @@ def _body(response: Any) -> str | None:
 
 
 def run(url: str, goal: str, approver: Approver, out: Path, *, max_steps: int = 25, headed: bool = True,
-        model: str = llm.DEFAULT_MODEL, channel: str | None = None) -> Discovery:
+        model: str = llm.DEFAULT_MODEL, channel: str | None = None, cdp: str = "") -> Discovery:
     found = Discovery(url=url, goal=goal)
     site_host = (urlsplit(url).hostname or "").removeprefix("www.")
     rec = _Recorder(site_host, approver, found.calls)
     started = time.time()
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=not headed, channel=channel)
-        ctx = browser.new_context(viewport={"width": 1600, "height": 900}, record_har_path=str(out / "network.har"))
+        if cdp:
+            # A browser someone else started (for example on a filmed desktop, reached through an SSH tunnel):
+            # the model keys stay on this machine, only browser commands cross the tunnel.
+            browser = p.chromium.connect_over_cdp(cdp)
+        else:
+            browser = p.chromium.launch(headless=not headed, channel=channel)
+        ctx = browser.new_context(viewport=None if cdp else {"width": 1600, "height": 900},
+                                  record_har_path=str(out / "network.har"))
         ctx.route("**/*", rec.route)
         ctx.on("requestfinished", rec.finished)
         page = ctx.new_page()
@@ -141,7 +147,8 @@ def run(url: str, goal: str, approver: Approver, out: Path, *, max_steps: int = 
             if not _step(page, found, step, site_host, model):
                 break
         ctx.close()
-        browser.close()
+        if not cdp:
+            browser.close()  # never close a browser we did not start
     found.seconds = round(time.time() - started, 1)
     found.save(out)
     return found
