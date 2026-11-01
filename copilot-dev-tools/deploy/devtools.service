@@ -1,0 +1,15 @@
+[Unit]
+Description=Dex Dev Tools MCP server (Claude Code toolset for Copilot Studio)
+After=network.target docker.service devbox-firewall.service
+Requires=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/devtools/src
+EnvironmentFile=/opt/devtools/.env
+ExecStart=/opt/devtools/venv/bin/python /opt/devtools/src/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

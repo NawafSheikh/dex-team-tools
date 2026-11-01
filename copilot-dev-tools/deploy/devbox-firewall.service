@@ -1,0 +1,12 @@
+[Unit]
+Description=Firewall the devbox sandbox network from the host and other containers
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/devbox-firewall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

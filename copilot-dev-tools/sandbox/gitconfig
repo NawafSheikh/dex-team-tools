@@ -1,0 +1,9 @@
+[user]
+	name = Copilot Studio (Dex Dev Tools)
+	email = copilot-devtools@users.noreply.github.com
+[init]
+	defaultBranch = main
+[safe]
+	directory = *
+[push]
+	autoSetupRemote = true

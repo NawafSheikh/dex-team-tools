@@ -1,0 +1,4 @@
+Host github.com
+  IdentityFile /home/dev/.ssh/deploy_key
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
