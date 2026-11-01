@@ -33,7 +33,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     timings: dict[str, float] = {}
     clock = time.time()
     site_host = (urlsplit(args.url).hostname or "").removeprefix("www.")
-    approver = approver_for(args.approve, args.approvals_dir)
+    approver = approver_for(args.approve, args.approvals_dir or str(out / "approvals"))
 
     if args.reuse and (out / "discovery.json").exists():
         found = json.loads((out / "discovery.json").read_text(encoding="utf-8"))
@@ -124,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--max-steps", type=int, default=25)
     r.add_argument("--model", default="sonnet")
     r.add_argument("--approve", choices=["terminal", "file", "deny"], default="terminal")
-    r.add_argument("--approvals-dir", default="~/.ai-os/harness/state/approvals")
+    r.add_argument("--approvals-dir", default="", help="where approval files go (default: <out>/approvals)")
     r.add_argument("--read-ok", nargs="*", default=[], help="operation ids a person declares read-only")
     r.add_argument("--tag", default="", help='JSON, e.g. {"body": {"src": "?utm_source=mcp"}}')
     r.add_argument("--rest-tag", default="", help="same as --tag, for the OpenAPI (REST tool) path")

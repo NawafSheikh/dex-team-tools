@@ -1,9 +1,17 @@
 // Standalone runner for the generated MCP server: node serve.mjs [port]. Endpoint: POST http://host:port/mcp
+// Safe defaults: listens on 127.0.0.1 only. To expose it (HOST=0.0.0.0), MCP_API_KEY must be set; every /mcp call
+// must then send it in the x-api-key header. A public deploy behind a platform (Vercel) uses mcp-server.mjs directly.
 import { createServer } from "node:http";
 import handler from "./mcp-server.mjs";
 
 const port = Number(process.argv[2] || process.env.PORT || 8787);
-const host = process.env.HOST || "0.0.0.0";
+const host = process.env.HOST || "127.0.0.1";
+const KEY = process.env.MCP_API_KEY || "";
+const LOCAL = new Set(["127.0.0.1", "localhost", "::1"]);
+if (!LOCAL.has(host) && KEY.length < 16) {
+  process.stderr.write("Refusing to listen on " + host + " without MCP_API_KEY (16+ characters).\n");
+  process.exit(1);
+}
 const MAX_BODY = 256 * 1024;
 
 createServer((req, res) => {
@@ -11,6 +19,10 @@ createServer((req, res) => {
   if (path === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end('{"ok":true}');
+  }
+  if (KEY && req.headers["x-api-key"] !== KEY) {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    return res.end('{"error":"missing or wrong x-api-key"}');
   }
   if (path !== "/mcp") {
     res.writeHead(404);
