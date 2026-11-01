@@ -1,0 +1,14 @@
+mcs.metadata:
+  componentName: Workday - List mission kinds
+kind: TaskDialog
+modelDisplayName: List mission kinds
+modelDescription: "The kinds of mission a workday can run and the checks that decide done for each."
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_WorkdayOrchestrator.shared_new-5fworkday-20orchestrator-5fYOURHASH.YOUR_CONNECTION_ID
+  connectionProperties:
+    mode: Maker
+
+  operationId: ListMissionKinds
+
+outputMode: All

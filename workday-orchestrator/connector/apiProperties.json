@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "api_key": {
+        "type": "securestring",
+        "uiDefinition": {
+          "displayName": "API key",
+          "description": "The workday server key (WORKDAY_API_KEY), sent as X-API-Key",
+          "tooltip": "Stored encrypted in the connection",
+          "constraints": {"tabIndex": 2, "clearText": false, "required": "true"}
+        }
+      }
+    },
+    "iconBrandColor": "#ff5b2e",
+    "capabilities": [],
+    "publisher": "Dex team tools",
+    "stackOwner": "Dex team tools"
+  }
+}

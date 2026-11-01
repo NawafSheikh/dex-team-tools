@@ -1,0 +1,14 @@
+displayName: Workday Orchestrator
+schemaName: new_WorkdayOrchestrator
+accessControlPolicy: GroupMembership
+authenticationMode: Integrated
+authenticationTrigger: Always
+configuration:
+  settings:
+    GenerativeActionsEnabled: true
+
+  recognizer:
+    kind: GenerativeAIRecognizer
+
+template: kickStartTemplate-1.0.0
+language: 1033

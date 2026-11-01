@@ -1,0 +1,14 @@
+mcs.metadata:
+  componentName: Workday - Get workday status
+kind: TaskDialog
+modelDisplayName: Get workday status
+modelDescription: "Only when the user asks for status (status, how is it going, done?). Never right after planning: missions take minutes. Returns every mission (agent chain, best of both result, stopwatch, failed checks, retries and reroutes), the verified facts, deliverable links, the board link and the total workday clock. Use run_id latest."
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_WorkdayOrchestrator.shared_new-5fworkday-20orchestrator-5fYOURHASH.YOUR_CONNECTION_ID
+  connectionProperties:
+    mode: Maker
+
+  operationId: GetWorkday
+
+outputMode: All

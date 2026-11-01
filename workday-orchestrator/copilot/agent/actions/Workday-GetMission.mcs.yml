@@ -1,0 +1,14 @@
+mcs.metadata:
+  componentName: Workday - Get mission detail
+kind: TaskDialog
+modelDisplayName: Get mission detail
+modelDescription: "One mission's packet, the worker's handoff note and every attempt with its verifier verdict. Use run_id latest."
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: new_WorkdayOrchestrator.shared_new-5fworkday-20orchestrator-5fYOURHASH.YOUR_CONNECTION_ID
+  connectionProperties:
+    mode: Maker
+
+  operationId: GetMission
+
+outputMode: All
