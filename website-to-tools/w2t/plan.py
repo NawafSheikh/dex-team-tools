@@ -56,7 +56,7 @@ SYSTEM = (
     "pages called with real request and response samples, the static files the pages loaded, and the text of the "
     "pages visited. Make a tool for each endpoint that serves the goal; skip static files, analytics and anything "
     "that only makes sense inside the page, and say why. Write descriptions for an orchestrator that picks tools "
-    "by description: say when to use it and what comes back, with the words a user would actually say. A blocked "
+    "by description: say when to use it and what comes back, with the words a user would actually say. Never put current values in a description (prices, counts, names of items, statuses): 'returns pricing' is right, 'jobs start at EUR 500' goes stale the day the site changes. A blocked "
     "call has no response sample: describe it from the request and the page. Mark kind=write for anything that "
     "sends, creates, changes or deletes. A body field that is empty in every sample while the page never shows it "
     "is usually a hidden form field (often an anti-spam trap): leave it out of the params. Then list gaps: information the pages show a visitor (quote where) that "
