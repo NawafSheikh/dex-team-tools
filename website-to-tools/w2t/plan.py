@@ -40,7 +40,8 @@ TOOL = {
 PLAN_SCHEMA = {
     "type": "object",
     "properties": {
-        "title": {"type": "string"}, "description": {"type": "string", "description": "what the whole API is for"},
+        "title": {"type": "string", "description": "short API name, at most 30 characters"},
+        "description": {"type": "string", "description": "what the whole API is for"},
         "tools": {"type": "array", "items": TOOL},
         "skipped": {"type": "array", "items": {"type": "object", "properties": {
             "endpoint": {"type": "string"}, "why": {"type": "string"}}, "required": ["endpoint", "why"]}},
@@ -92,4 +93,15 @@ def enforce(data: dict[str, Any], endpoints: list[Endpoint]) -> dict[str, Any]:
         ids.add(tool["operation_id"])
         kind = "write" if ep.method not in {"GET", "HEAD"} else tool["kind"]
         tools.append({**tool, "kind": kind, "method": ep.method, "host": ep.host, "path": ep.path})
-    return {**data, "tools": tools}
+    return undash({**data, "tools": tools})
+
+
+def undash(value: Any) -> Any:
+    """No em or en dashes in anything we publish: they become a comma or a hyphen."""
+    if isinstance(value, str):
+        return value.replace(" — ", ", ").replace("—", ", ").replace(" – ", ", ").replace("–", "-")
+    if isinstance(value, list):
+        return [undash(v) for v in value]
+    if isinstance(value, dict):
+        return {k: undash(v) for k, v in value.items()}
+    return value
