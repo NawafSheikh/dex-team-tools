@@ -134,3 +134,10 @@ def test_file_approval_needs_a_written_decision(tmp_path: Path):
     f.write_text(json.dumps({"decision": "deny"}), encoding="utf-8")
     assert approval._decision(f) is False
     assert approval.DenyAll().ask(approval.Request("s", "t", "d", "r")) is False
+
+
+def test_undash_and_short_title():
+    from w2t.plan import undash
+    assert undash({"a": ["x \u2014 y", "1\u20132"]}) == {"a": ["x, y", "1-2"]}
+    assert openapi.short_title("mcpforwork.com, Hire Dex and her AI team") == "mcpforwork.com, Hire Dex and"
+    assert openapi.short_title("Short") == "Short"
